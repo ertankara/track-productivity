@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Daily Timer</title>
+  <link href="./style.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+  <div class="input-container">
+    <input type="text" maxlength="2" id="input-h" placeholder="hh" name="hours">
+    <input type="text" maxlength="2" id="input-m" placeholder="mm" name="minutes">
+    <input type="text" maxlength="2" id="input-s" placeholder="ss" name="seconds">
+  </div>
+
+  <div class="completed-time">
+    <span>Completed this week</span>
+    <div>
+      <span id="completed-h">00</span>:<span id="completed-m">00</span>
+    </div>
+  </div>
+
+  <div class="display-time-container">
+    <span id="display-h">00</span>:
+    <span id="display-m">00</span>:
+    <span id="display-s">00</span>:
+    <span id="display-ms">00</span>
+  </div>
+
+  <div>
+    <button id="timer-state-btn">Resume/Pause</button>
+    <button id="reset-timer">Reset</button>
+  </div>
+
+
+  <script type="application/javascript" src="./main.js"></script>
+</body>
+</html>
