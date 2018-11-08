@@ -24,6 +24,7 @@ if (!String.prototype.padStart) {
     init: function() {
       this.declareLocalBindings();
 
+
       this.hoursInp = document.querySelector('#input-h')
       this.minutesInp = document.querySelector('#input-m');
       this.secondsInp = document.querySelector('#input-s');
@@ -32,6 +33,9 @@ if (!String.prototype.padStart) {
       this.displayM = document.querySelector('#display-m');
       this.displayS = document.querySelector('#display-s');
       this.displayMS = document.querySelector('#display-ms');
+
+      this.weeklyRemainingH = document.querySelector('#weekly-remaining-time-h');
+      this.weeklyRemainingM = document.querySelector('#weekly-remaining-time-m');
 
       this.displayCompletedH = document.querySelector('#completed-h');
       this.displayCompletedM = document.querySelector('#completed-m');
@@ -44,6 +48,7 @@ if (!String.prototype.padStart) {
 
       if (localStorage.untilNextWeek && Number.parseInt(localStorage.untilNextWeek) > Date.now()) {
         this.convertTimeToHumanFriendly(Number.parseInt(localStorage.totalInWeek), { displayCompleted: true })
+        this.countWeeklyRemaining();
       }
       else {
         this.reset();
@@ -56,6 +61,7 @@ if (!String.prototype.padStart) {
       if (JSON.parse(localStorage.isPaused) === false) {
         this.pauseTimer = JSON.parse(localStorage.isPaused);
         this.count();
+        this.countWeeklyRemaining();
       }
 
       if (localStorage && !localStorage.goalTime)  {
@@ -89,11 +95,6 @@ if (!String.prototype.padStart) {
       let result = 0;
 
       let interval = setInterval(() => {
-        if (localStorage.day !== (new Date).toDateString().split(' ')[0]) {
-          this.reset();
-          clearInterval(interval);
-        }
-
         if (Number.parseInt(localStorage.goalTime) - result > 0 && !this.pauseTimer) {
           // Save every 30 seconds
           if (result > 30000) {
@@ -175,10 +176,10 @@ if (!String.prototype.padStart) {
 
         this.convertTimeToHumanFriendly(Number.parseInt(localStorage.totalInWeek), { displayCompleted: true })
 
-        localStorage.day = (new Date().toDateString()).split(' ')[0];
         localStorage.goalTime = targetTimeMSForm;
 
         this.count();
+        this.countWeeklyRemaining();
 
         // Clear the inputs
         this.hoursInp.value = '';
@@ -202,7 +203,27 @@ if (!String.prototype.padStart) {
     reset: function() {
       this.convertTimeToHumanFriendly(0);
       localStorage.goalTime = 0;
-      localStorage.day = '';
+    },
+
+    countWeeklyRemaining: function () {
+      if (
+        !localStorage.untilNextWeek &&
+        !Number.isNaN(Number.parseInt(localStorage.untilNextWeek))
+      ) {
+        return;
+      }
+
+      let interval = setInterval(() => {
+        let remainingMS = Number.parseInt(localStorage.untilNextWeek) - Date.now();
+        if (remainingMS < 0) {
+          clearInterval(interval)
+          return;
+        }
+
+        this.weeklyRemainingH.textContent = String(Number.parseInt(remainingMS / (1000 * 60 * 60))).padStart(2, '0');
+        this.weeklyRemainingM.textContent = String(Number.parseInt(remainingMS / (1000 * 60) % 60)).padStart(2, '0');
+
+      }, 100);
     }
   };
 
