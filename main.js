@@ -42,7 +42,9 @@ if (!String.prototype.padStart) {
 
       const resumePauseBtn = document.querySelector('#timer-state-btn');
       const resetBtn = document.querySelector('#reset-timer');
+      const resetWeekButton = document.querySelector('#start-new-week');
 
+      resetWeekButton.addEventListener('click', () => this.resetDisplayingValues());
       resumePauseBtn.addEventListener('click', () => this.onTimeSet());
       resetBtn.addEventListener('click', () => time.reset());
 
@@ -118,6 +120,21 @@ if (!String.prototype.padStart) {
       }, 100);
     },
 
+    resetDisplayingValues() {
+      localStorage.clear();
+
+      this.displayH.textContent = '00';
+      this.displayM.textContent = '00';
+      this.displayS.textContent = '00';
+      this.displayMS.textContent = '00';
+
+      this.displayCompletedH.textContent = '00';
+      this.displayCompletedM.textContent = '00';
+
+      this.weeklyRemainingH.textContent = '00';
+      this.weeklyRemainingM.textContent = '00';
+    },
+
     convertTimeToHumanFriendly: function(duration, { displayCompleted } = {}) {
       const
         milliseconds = Number.parseInt((duration % 1000) / 100),
@@ -152,7 +169,8 @@ if (!String.prototype.padStart) {
     },
 
     onTimeSet: function() {
-      if (!localStorage.goalTime || Number.parseInt(localStorage.goalTime) <= 0) {
+      if (!Number(localStorage.goalTime) || Number.parseInt(localStorage.goalTime) <= 0) {
+        console.log('First! should');
         this.pauseTimer = false;
         localStorage.isPaused = false;
         let targetTimeMSForm = this.convertToMs(
@@ -187,6 +205,7 @@ if (!String.prototype.padStart) {
         this.secondsInp.value = '';
       }
       else {
+        console.log('No, shouldn\'t', Boolean(localStorage.goalTime));
         this.pauseTimer = !this.pauseTimer;
         localStorage.isPaused = this.pauseTimer;
 
@@ -213,10 +232,11 @@ if (!String.prototype.padStart) {
         return;
       }
 
-      let interval = setInterval(() => {
+      let weeklyInterval = setInterval(() => {
         let remainingMS = Number.parseInt(localStorage.untilNextWeek) - Date.now();
-        if (remainingMS < 0) {
-          clearInterval(interval)
+
+        if (!remainingMS || remainingMS < 0) {
+          clearInterval(weeklyInterval);
           return;
         }
 
