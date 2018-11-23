@@ -121,7 +121,11 @@ if (!String.prototype.padStart) {
     },
 
     resetDisplayingValues() {
-      localStorage.clear();
+      localStorage.goalTime = 0;
+      localStorage.day = '';
+      localStorage.isPaused = true;
+      localStorage.totalInWeek = 0;
+      localStorage.untilNextWeek = 0;
 
       this.displayH.textContent = '00';
       this.displayM.textContent = '00';
