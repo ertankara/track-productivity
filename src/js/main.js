@@ -147,6 +147,21 @@
       this.counterInterval = null;
     },
 
+    getTotalCompletedTime() {
+      return Number.parseInt(localStorage.totalTimeSpent);
+    },
+
+    getEarliestCreatedTask() {
+      const tasks = modal.getAllInternalTasks();
+      let highest = 0;
+      for (let i = 0; i < tasks.length; i++) {
+        if (tasks[i].timeStamp > highest)
+          highest = tasks[i].timeStamp;
+      }
+
+      return highest;
+    },
+
     getNextUndoneTaskFromArray() {
       // const tasks = modal.getAllInternalTasks();
       // return tasks.find(task => !task.isDone);
@@ -208,6 +223,8 @@
       this.pauseCounter();
       modal.markCurrentTaskAsCompleted();
       view.renderNextTask();
+      counterView.renderSpentTime(0); // To reset timer
+      wholeTimeWorkHours.renderCompletedTime(Number.parseInt(localStorage.totalTimeSpent));
     },
 
     startCounter() {
@@ -302,16 +319,44 @@
 
   const wholeTimeWorkHours = {
     init() {
-      console.log('hei!');
+      this._completedView = document.getElementById('completed-time');
+      this._sinceView = document.getElementById('since-time');
+
+      this.renderCompletedTime(app.getTotalCompletedTime());
+      this.renderTimeSinceStartDate(Date.now() - app.getEarliestCreatedTask());
     },
 
-    renderWorkHours() {
+    renderCompletedTime(ms) {
+      this._completedView.textContent = this.getHumanReadableFormat(ms);
+    },
 
+    renderTimeSinceStartDate(ms) {
+      this._sinceView.textContent = this.getHumanReadableFormat(ms);
+    },
+
+    getHumanReadableFormat(timeMS) {
+      const date = convertTimeFromMs(timeMS);
+      let str = '';
+      if (date.days > 0) {
+        str += `${date.days} days `;
+      }
+
+      if (date.hours > 0) {
+        str += `${date.hours} hours `;
+      }
+
+      if (date.minutes > 0) {
+        str += `${date.minutes} minutes `;
+      }
+
+      if (date.seconds > 0) {
+        str += `${date.seconds} seconds`;
+      }
+
+      // this._completedView.textContent = str;
+      return str;
     }
   }
-
-
-
 
   app.init();
 })();
