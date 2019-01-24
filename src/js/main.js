@@ -43,7 +43,6 @@
         if (localStorage.isTimerPaused) { // Check if any value exists, not an actual bool comparison
           const isTimerPaused = /true/.test(localStorage.isTimerPaused);
           if (!isTimerPaused) {
-            console.log('not here');
             app.startCounter(true);
           }
         }
@@ -135,13 +134,11 @@
 
   const app = {
     init() {
+      console.log('init app');
       modal.init();
       view.init();
       counterView.init();
       wholeTimeWorkHours.init();
-      // if (modal.getAllInternalTasks().length > 0) {
-      //   view.init();
-      // }
       this.getElementsFromDocument();
       this.attachEventListenersToElements();
       this.counterInterval = null;
@@ -152,19 +149,11 @@
     },
 
     getEarliestCreatedTask() {
-      const tasks = modal.getAllInternalTasks();
-      let highest = 0;
-      for (let i = 0; i < tasks.length; i++) {
-        if (tasks[i].timeStamp > highest)
-          highest = tasks[i].timeStamp;
-      }
-
-      return highest;
+      return Math.min(...modal.getAllInternalTasks()
+        .map(task => task.timeStamp));
     },
 
     getNextUndoneTaskFromArray() {
-      // const tasks = modal.getAllInternalTasks();
-      // return tasks.find(task => !task.isDone);
       return modal.getNextUndoneTaskFromArray();
     },
 
@@ -208,6 +197,10 @@
 
       modal.removeCurrentTask();
       view.renderNextTask();
+      localStorage.isTimerPaused = true;
+      delete localStorage.startingTime;
+      clearInterval(this.counterInterval);
+      counterView.renderSpentTime(0);
     },
 
     markTaskAsCompleted() {
