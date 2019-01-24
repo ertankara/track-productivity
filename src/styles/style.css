@@ -1,0 +1,234 @@
+@keyframes slide-to-bottom {
+  from {
+    top: 0px;
+  }
+  to {
+    top: 100px;
+  }
+}
+
+
+@keyframes slide-to-top {
+  from {
+    top: 100px;
+  }
+  to {
+    top: 0px;
+  }
+}
+
+
+@keyframes flip-active {
+  from {
+    transform: rotate(0deg)
+  }
+  to {
+    transform: rotate(15deg)
+  }
+}
+
+
+@keyframes flip-passive {
+  from {
+    transform: rotate(15deg)
+  }
+  to {
+    transform: rotate(0deg)
+  }
+}
+
+
+@keyframes hang-around {
+  0% {
+    transform: rotateX(0deg) rotateY(0deg);
+    top: 15px;
+    color: #fff;
+  }
+  10% {
+    transform: rotateX(5deg) rotateY(20deg);
+    top: 20px;
+    color: #bbb;
+  }
+  20% {
+    transform: rotateX(10deg) rotateY(50deg);
+    top: 25px;
+    color:#888;
+  }
+  40% {
+    transform: rotateX(20deg) rotateY(60deg);
+    top: #555;
+  }
+  60% {
+    transform: rotateX(10deg) rotateY(50deg);
+    top: #888;
+  }
+  80% {
+    transform: rotateX(5deg) rotateY(20deg);
+    top: 20px;
+    color: #bbb;
+  }
+  100% {
+    transform: rotateX(0deg) rotateY(0deg);
+    top: 15px;
+    color: #fff;
+  }
+}
+
+*, *::after, *::before {
+  box-sizing: border-box;
+}
+
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+
+*::selection {
+  background-color: #4a4a4a;
+  color: #ededed;
+}
+
+
+html * {
+  font-family: sans-serif;
+}
+
+
+
+body {
+  min-height: 800px;
+  max-width: 550px;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+
+header {
+  display: flex;
+  align-items: center;
+  height: 20vh;
+  border-radius: 2px;
+  margin-bottom: 20px;
+}
+
+
+header > h1 {
+  position: relative;
+  font-size: 3.5em;
+  margin-right: auto;
+  margin-left: auto;
+  padding: 10px;
+  background-color: #4a4a4a;
+  color: #4a4a4a;
+  text-align: center;
+  transition: transform 0.5 top 0.5;
+  animation: hang-around 1.2s infinite;
+}
+
+
+.task-interface-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+
+input[type="text"] {
+  position: relative;
+  animation: slide-to-top 0.4s forwards;
+  min-height: 100px;
+  padding: 10px;
+  font-size: 1em;
+  margin-bottom: 20px;
+  width: 80%;
+  text-align: center;
+  border: none;
+  border-bottom: 2px solid #555;
+  border-radius: 2px;
+  transition: all 0.4s;
+  letter-spacing: 0.055em;
+}
+
+
+input[type="text"]:focus {
+  animation: slide-to-bottom 0.4s forwards;
+  transform: scale(1.1, 1.1);
+}
+
+
+body > div > div:first-child span {
+  font-size: 5.6em;
+}
+
+
+body > div > div:nth-child(2) {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+
+/* body > div > div:nth-child(2) button { */
+.operator-btn {
+  font-size: 2.2em;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 20px;
+  width: 60px;
+  height: 70px;
+  background-color: #353535;
+  color: #ddd;
+  text-align: center;
+  border-radius: 3px;
+  cursor: pointer;
+  border-radius: 5px;
+  animation: flip-passive 0.7s forwards;
+}
+
+
+/* body > div > div:nth-child(2) button:active { */
+.operator-btn:active {
+  animation: flip-active 0.7s forwards;
+}
+
+
+footer > div {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  /* align-items: flex-start; */
+  align-items: center;
+  height: 170px;
+}
+
+
+footer a {
+  font-size: 1.2em;
+  color: #121212;
+
+}
+
+footer > div > div {
+  margin-bottom: 20px;
+}
+
+
+footer > div > div span {
+  font-size: 1.2em;
+  width: 24%;
+  background-color: #222;
+  color: #eee;
+  padding: 15px;
+}
+
+
+input.has-task {
+  background-color: #4a4a4a;
+  color: #ff0;
+  font-size: 1.2em;
+}

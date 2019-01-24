@@ -4,44 +4,77 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>Daily Timer</title>
-  <link href="./style.css" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="./src/styles/style.css" />
+  <title>Track Productivity</title>
 </head>
 <body>
-  <div class="input-container">
-    <input type="text" maxlength="2" id="input-h" placeholder="hh" name="hours">
-    <input type="text" maxlength="2" id="input-m" placeholder="mm" name="minutes">
-    <input type="text" maxlength="2" id="input-s" placeholder="ss" name="seconds">
-  </div>
-
-  <div class="completed-time">
-    <span>Completed this week</span>
-    <div>
-      <span id="completed-h">00</span>:<span id="completed-m">00</span>
-    </div>
-    <span>Until this week ends</span>
-    <div>
-      <span id="weekly-remaining-time-h">00</span>:<span id="weekly-remaining-time-m">00</span>
-    </div>
-  </div>
-
-  <div class="display-time-container">
-    <span id="display-h">00</span>:
-    <span id="display-m">00</span>:
-    <span id="display-s">00</span>:
-    <span id="display-ms">00</span>
-  </div>
-
+  <header>
+    <h1>Work!</h1>
+  </header>
   <div>
-    <button id="timer-state-btn">Resume/Pause</button>
-    <button id="reset-timer">Reset</button>
+    <div class="task-interface-container">
+      <input
+        id="current-task"
+        type="text"
+        placeholder="current task..."
+        aria-label="Current task to focus on"
+      />
+      <div>
+        <span id="counter-minutes">00</span>
+        <span>:</span>
+        <span id="counter-seconds">00</span>
+      </div>
+      <button
+        id="add-btn"
+        class="operator-btn">+</button>
+    </div>
+
+    <div>
+      <button
+        class="operator-btn"
+        id="play-btn"
+        aria-label="Activate timer for the current task"
+        title="Activate timer for the current task"
+        >▶</button>
+
+      <button
+        class="operator-btn"
+        id="pause-btn"
+        aria-label="Pause timer for the current task"
+        title="Puase timer for the task"
+      >||</button>
+
+      <button
+        class="operator-btn"
+        id="checkmark-btn"
+        aria-label="Mark current task as completed"
+        title="Mark task as completed"
+      >✓</button>
+
+      <button
+        class="operator-btn"
+        id="drop-btn"
+        aria-label="Remove current task"
+        title="Remove task"
+      >×</button>
+    </div>
+
+    <footer>
+      <div>
+        <div>
+          <span>Completed:</span>
+          <span>6 months 12 days 5 hours 51 minutes</span>
+        </div>
+        <div>
+          <span>Since:</span>
+          <span>2 days 5 hours 2 minutes</span>
+        </div>
+        <a href="#">See finished tasks</a>
+      </div>
+
+    </footer>
   </div>
 
-  <div>
-    <button id="start-new-week">Start a New Week</button>
-  </div>
-
-
-  <script type="application/javascript" src="./main.js"></script>
+  <script src="./src/js/main.js"></script>
 </body>
 </html>
