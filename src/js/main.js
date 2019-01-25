@@ -327,7 +327,7 @@
       this._sinceView.textContent = this.getHumanReadableFormat(ms);
     },
 
-    getHumanReadableFormat(timeMS) {
+    getHumanReadableFormat(timeMS = 0) {
       const date = convertTimeFromMs(timeMS);
       let str = '';
       if (date.days > 0) {
@@ -345,6 +345,8 @@
       if (date.seconds > 0) {
         str += `${date.seconds} seconds`;
       }
+
+      if (str.length === 0) return '0 seconds';
 
       // this._completedView.textContent = str;
       return str;
