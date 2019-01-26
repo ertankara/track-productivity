@@ -15,17 +15,13 @@
     const seconds = Number.parseInt((timeInMs / 1000) % 60);
     const minutes = Number.parseInt((timeInMs / 60000) % 60);
     const hours = Number.parseInt((timeInMs / 3.6e+6) % 24);
-    const days = Number.parseInt((timeInMs / 8.64e+7) % 30);
-    // const months = Number.parseInt((timeInMs / 2.628e+9)); // Roughly
-    // const years = Number.parseInt((timeInMs /  3.154e+10));
+    const days = Number.parseInt(timeInMs / 8.64e+7);
 
     return {
       seconds,
       minutes,
       hours,
-      days,
-      // months,
-      // years
+      days
     }
   }
 
