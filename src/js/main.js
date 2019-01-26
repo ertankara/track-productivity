@@ -298,12 +298,14 @@
 
   const counterView = {
     init() {
+      this._counterViewHours = document.getElementById('counter-hours');
       this._counterViewMinutes = document.getElementById('counter-minutes');
       this._counterViewSeconds = document.getElementById('counter-seconds');
     },
 
     renderSpentTime(ms) {
-      const { seconds, minutes } = convertTimeFromMs(ms);
+      const { seconds, minutes, hours } = convertTimeFromMs(ms);
+      this._counterViewHours.textContent = String(hours).padStart(2, '0');
       this._counterViewMinutes.textContent = String(minutes).padStart(2, '0');
       this._counterViewSeconds.textContent = String(seconds).padStart(2, '0');
     }
