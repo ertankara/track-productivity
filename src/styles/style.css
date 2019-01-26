@@ -102,6 +102,7 @@ body {
   max-width: 550px;
   margin-right: auto;
   margin-left: auto;
+  overflow: scroll;
 }
 
 
@@ -172,7 +173,6 @@ body > div > div:nth-child(2) {
 }
 
 
-/* body > div > div:nth-child(2) button { */
 .operator-btn {
   font-size: 2.2em;
   display: flex;
@@ -191,7 +191,6 @@ body > div > div:nth-child(2) {
 }
 
 
-/* body > div > div:nth-child(2) button:active { */
 .operator-btn:active {
   animation: flip-active 0.7s forwards;
 }
@@ -201,20 +200,43 @@ footer > div {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  /* align-items: flex-start; */
   align-items: center;
-  height: 170px;
+  min-height: 170px;
 }
 
 
-footer a {
+footer button {
   font-size: 1.2em;
   color: #121212;
-
+  border: none;
+  text-decoration: underline;
+  background-color: #fff;
+  font-size: 1.7em;
+  margin: 15px;
+  background-color: #4a4a4a;
+  color: #eee;
+  padding: 10px;
 }
 
 footer > div > div {
   margin-bottom: 20px;
+  margin:20px;
+}
+
+
+footer > div > ul > li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 1.4em;
+  margin-bottom: 10px;
+}
+
+
+footer > div > ul > li > span:nth-child(odd) {
+  font-weight: bold;
+  text-decoration: underline;
+  margin-bottom: 10px;
 }
 
 

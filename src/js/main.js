@@ -139,6 +139,8 @@
       view.init();
       counterView.init();
       wholeTimeWorkHours.init();
+      previousTasksView.init();
+
       this.getElementsFromDocument();
       this.attachEventListenersToElements();
       this.counterInterval = null;
@@ -155,6 +157,10 @@
 
     getNextUndoneTaskFromArray() {
       return modal.getNextUndoneTaskFromArray();
+    },
+
+    getAllTasksFromStorage() {
+      return modal.getTasksFromStorage();
     },
 
     getCurrentTaskText() {
@@ -352,6 +358,61 @@
 
       // this._completedView.textContent = str;
       return str;
+    }
+  };
+
+
+  const previousTasksView = {
+    init() {
+      this._previousTaskDisplayButton = document.getElementById('previous-task-display-button');
+      this._previousTasksContainer = document.getElementById('previous-tasks-container');
+      this.shouldDisplayPreviousTasks = false;
+      this.shouldDisplayTaskContainer(this.shouldDisplayPreviousTasks);
+
+      this._previousTasksContainer.appendChild(
+        this.constructHTMLFromPreviousTasks(
+          app.getAllTasksFromStorage().reverse()
+        )
+      );
+
+      this.insertTextForButton('See finished tasks');
+      this._previousTaskDisplayButton.addEventListener('click', () => this.switchDisplay());
+    },
+
+    constructHTMLFromPreviousTasks(tasks) {
+      const fragment = document.createDocumentFragment();
+
+      for (const task of tasks) {
+        const li = document.createElement('li');
+        const taskSpan = document.createElement('span');
+        const timeSpan = document.createElement('span');
+        taskSpan.textContent = task.task;
+        timeSpan.textContent = wholeTimeWorkHours.getHumanReadableFormat(task.timeSpent);
+        li.appendChild(taskSpan);
+        li.appendChild(timeSpan);
+        fragment.appendChild(li);
+      }
+
+      return fragment;
+    },
+
+    switchDisplay() {
+      this.shouldDisplayPreviousTasks = !this.shouldDisplayPreviousTasks;
+      this.renderPreviousTasks(this.shouldDisplayPreviousTasks);
+    },
+
+    renderPreviousTasks(shouldRender) {
+      const text = shouldRender ? 'Hide the finished tasks' : 'See the finished tasks';
+      this.shouldDisplayTaskContainer(shouldRender);
+      this.insertTextForButton(text);
+    },
+
+    insertTextForButton(newValue) {
+      this._previousTaskDisplayButton.textContent = newValue
+    },
+
+    shouldDisplayTaskContainer(shouldDisplay) {
+      this._previousTasksContainer.style.display = shouldDisplay ? 'block' : 'none';
     }
   }
 
