@@ -168,6 +168,10 @@
       return modal.currentTask.task || '';
     },
 
+    getCurrentTaskSpentTime() {
+      return modal.currentTask.timeSpent;
+    },
+
     getElementsFromDocument() {
       this._playBtn = document.getElementById('play-btn');
       this._pauseBtn = document.getElementById('pause-btn');
@@ -307,6 +311,9 @@
       this._counterViewHours = document.getElementById('counter-hours');
       this._counterViewMinutes = document.getElementById('counter-minutes');
       this._counterViewSeconds = document.getElementById('counter-seconds');
+      this.renderSpentTime(
+        app.getCurrentTaskSpentTime()
+      );
     },
 
     renderSpentTime(ms) {
