@@ -104,7 +104,10 @@
     },
 
     getTasksFromStorage() {
-      return JSON.parse(localStorage.tasks);
+      if (localStorage.tasks)
+        return JSON.parse(localStorage.tasks);
+
+      return [];
     },
 
     getSearchedTask(taskId) {
@@ -117,6 +120,34 @@
       this.storeTasksInLocalStorage(newArray);
       this.setAllTasksInternally(newArray);
       this.setNextUndoneTask();
+    },
+
+    flushTasks() {
+      this.clearLocalStorage();
+      this.clearInternalStorage();
+
+      // Restart modal
+      modal.init();
+    },
+
+    clearInternalStorage() {
+      this._tasks = null;
+      this._currentTask = null;
+    },
+
+    clearLocalStorage() {
+      const keys = [
+        'tasks',
+        'currentTaskId',
+        'isTimerPaused',
+        'tasks',
+        'totalTimeSpent',
+        'startingTime'
+      ];
+
+      for (const key of keys) {
+        delete localStorage[key];
+      }
     },
 
     markCurrentTaskAsCompleted() {
@@ -169,7 +200,7 @@
     },
 
     getCurrentTaskSpentTime() {
-      return modal.currentTask.timeSpent;
+      return modal.currentTask.timeSpent || 0;
     },
 
     getElementsFromDocument() {
@@ -179,6 +210,7 @@
       this._dropBtn = document.getElementById('drop-btn');
       this._addBtn = document.getElementById('add-btn');
       this._taskInput = document.getElementById('current-task');
+      this._removeAllTasksButton = document.getElementById('remove-all-tasks-button');
     },
 
     attachEventListenersToElements() {
@@ -187,6 +219,7 @@
       this._checkMarkBtn.addEventListener('click', () => this.markTaskAsCompleted());
       this._dropBtn.addEventListener('click', () => this.dropTask());
       this._addBtn.addEventListener('click', () => this.registerCurrentTask());
+      this._removeAllTasksButton.addEventListener('click', () => this.removeAllPreviousTasks());
     },
 
     registerCurrentTask() {
@@ -199,6 +232,7 @@
       localStorage.currentTaskId = task.id;
       modal.storeTaskInternally(task);
       view.renderNextTask();
+      previousTasksView.constructTasks();
     },
 
     dropTask() {
@@ -211,6 +245,15 @@
       delete localStorage.startingTime;
       clearInterval(this.counterInterval);
       counterView.renderSpentTime(0);
+      previousTasksView.constructTasks();
+    },
+
+    removeAllPreviousTasks() {
+      modal.flushTasks();
+      this.pauseCounter();
+      counterView.renderSpentTime(0);
+      view.renderNextTask();
+      previousTasksView.constructTasks();
     },
 
     markTaskAsCompleted() {
@@ -235,7 +278,7 @@
         if (Object.keys(modal.currentTask).length === 0)
           return;
 
-        const startingTime = this.getStartingTime() - modal.currentTask.timeSpent;
+        const startingTime = this.getStartingTime() - (modal.currentTask.timeSpent || 0);
         localStorage.isTimerPaused = false;
 
         this.counterInterval = setInterval(() => {
@@ -275,7 +318,9 @@
   const view = {
     init() {
       this._taskInput = document.getElementById('current-task');
-      view.renderNextTask();
+      this._removeAllTasksButton = document.getElementById('remove-all-tasks-button');
+
+      this.renderNextTask();
     },
 
     hasTask() {
@@ -375,6 +420,24 @@
       this._previousTasksContainer = document.getElementById('previous-tasks-container');
       this.shouldDisplayPreviousTasks = false;
       this.shouldDisplayTaskContainer(this.shouldDisplayPreviousTasks);
+      this.constructTasks();
+      this.insertTextForButton('See the tasks');
+      this._previousTaskDisplayButton.addEventListener('click', () => this.switchDisplay());
+    },
+
+    constructTasks() {
+      // If there are items from previous renders
+      if (this._previousTasksContainer.firstElementChild) {
+        // Hide it from the view, to make the deletion more performant
+        this.shouldDisplayTaskContainer(false);
+        // Remove them
+        while (this._previousTasksContainer.firstElementChild) {
+          this._previousTasksContainer.firstElementChild.remove();
+        }
+      }
+
+      // Once done deleting, [if performed deletion]
+      this.shouldDisplayTaskContainer(this.shouldDisplayPreviousTasks);
 
       this._previousTasksContainer.appendChild(
         this.constructHTMLFromPreviousTasks(
@@ -382,8 +445,7 @@
         )
       );
 
-      this.insertTextForButton('See finished tasks');
-      this._previousTaskDisplayButton.addEventListener('click', () => this.switchDisplay());
+      // this.switchDisplay();
     },
 
     constructHTMLFromPreviousTasks(tasks) {
@@ -405,11 +467,11 @@
 
     switchDisplay() {
       this.shouldDisplayPreviousTasks = !this.shouldDisplayPreviousTasks;
-      this.renderPreviousTasks(this.shouldDisplayPreviousTasks);
+      this.renderPreviousTasksVisually(this.shouldDisplayPreviousTasks);
     },
 
-    renderPreviousTasks(shouldRender) {
-      const text = shouldRender ? 'Hide the finished tasks' : 'See the finished tasks';
+    renderPreviousTasksVisually(shouldRender) {
+      const text = shouldRender ? 'Hide the tasks' : 'See the tasks';
       this.shouldDisplayTaskContainer(shouldRender);
       this.insertTextForButton(text);
     },
