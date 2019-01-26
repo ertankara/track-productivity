@@ -34,6 +34,7 @@
   const modal = {
     _tasks: [],
     _currentTask: {},
+    _isTimerPaused: true,
 
     init() {
       if (localStorage && localStorage.length !== 0) {
@@ -43,7 +44,7 @@
         if (localStorage.isTimerPaused) { // Check if any value exists, not an actual bool comparison
           const isTimerPaused = /true/.test(localStorage.isTimerPaused);
           if (!isTimerPaused) {
-            app.startCounter(true);
+            app.startCounter();
           }
         }
       }
@@ -60,6 +61,14 @@
         localStorage.totalTimeSpent = 0;
 
       this.setNextUndoneTask();
+    },
+
+    get isTimerPaused() {
+      return this._isTimerPaused;
+    },
+
+    set isTimerPaused(bool) {
+      this._isTimerPaused = bool;
     },
 
     set currentTask(newTask) {
@@ -177,6 +186,14 @@
       this.counterInterval = null;
     },
 
+    isTimerPaused() {
+      return modal.isTimerPaused;
+    },
+
+    activateTimer(bool) {
+      modal.isTimerPaused = !bool;
+    },
+
     getTotalCompletedTime() {
       return Number.parseInt(localStorage.totalTimeSpent);
     },
@@ -275,9 +292,12 @@
 
     startCounter() {
       setTimeout(() => {
-        if (Object.keys(modal.currentTask).length === 0)
-          return;
+        if (
+          Object.keys(modal.currentTask).length === 0 ||
+          !this.isTimerPaused() // To prevent starting timer multiple times
+        ) return;
 
+        this.activateTimer(true);
         const startingTime = this.getStartingTime() - (modal.currentTask.timeSpent || 0);
         localStorage.isTimerPaused = false;
 
@@ -296,6 +316,7 @@
       clearInterval(this.counterInterval);
       localStorage.isTimerPaused = true;
       delete localStorage.startingTime;
+      this.activateTimer(false);
     },
 
     getStartingTime() {
