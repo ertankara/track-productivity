@@ -89,8 +89,6 @@
     },
 
     getNextUndoneTaskFromArray() {
-      // If tasks exist in the local storage, then search for
-      // first task that is not completed, then select it as current task
       // Get the undone task starting the search from the last element
       for (let i = this._tasks.length - 1; i >= 0; i--) {
         if (this._tasks[i] && !this._tasks[i].isDone)
@@ -233,6 +231,12 @@
       this._dropBtn.addEventListener('click', () => this.dropTask());
       this._addBtn.addEventListener('click', () => this.registerCurrentTask());
       this._removeAllTasksButton.addEventListener('click', () => this.removeAllPreviousTasks());
+
+      this._taskInput.addEventListener('keyup', (e) => {
+        if (document.activeElement === e.target && e.keyCode === 13) {
+          this.registerCurrentTask();
+        }
+      });
     },
 
     registerCurrentTask() {
