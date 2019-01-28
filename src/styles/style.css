@@ -166,7 +166,8 @@ body > div > div:first-child span {
 }
 
 
-body > div > div:nth-child(2) {
+body > div > div:nth-child(2),
+body > div > div:nth-child(3) {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -180,7 +181,9 @@ body > div > div:nth-child(2) {
   justify-content: center;
   align-items: center;
   margin: 20px;
-  width: 60px;
+  min-width: 60px;
+  padding-right: 10px;
+  padding-left: 10px;
   height: 70px;
   background-color: #353535;
   color: #ddd;
@@ -194,6 +197,11 @@ body > div > div:nth-child(2) {
 
 .operator-btn:active {
   animation: flip-active 0.7s forwards;
+}
+
+
+.selected-challenge {
+  background-color: #97a800;
 }
 
 
@@ -257,7 +265,7 @@ footer > div > div span {
 
 
 .daily-goal-completed {
-  background-color: #39a70e;
+  background-color: #31ac00;
 }
 
 .weekly-goal-pending {
@@ -265,7 +273,7 @@ footer > div > div span {
 }
 
 .weekly-goal-completed {
-  background-color: #39a70e;
+  background-color: #31ac00;
 }
 
 

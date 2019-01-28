@@ -26,8 +26,29 @@
   }
 
   const ONE_WEEK = 604800000;
-  const DAILY_GOAL = 21600000; // 6 hours in ms
-  const WEEKLY_GOAL = DAILY_GOAL * 7;
+  // const DAILY_GOAL_NORMAL = 21600000; // 6 hours in ms
+  // const WEEKLY_GOAL_NORMAL = DAILY_GOAL_NORMAL * 7;
+
+  const CHALLENGES = {
+    normal: {
+      id: 0,
+      dailyGoal: 21600000, // 6 hours
+      isSelected: false,
+      get weeklyGoal() { return this.dailyGoal * 7 }
+    },
+    hard: {
+      id: 1,
+      dailyGoal: 32400000, // 9 hours
+      isSelected: false,
+      get weeklyGoal() { return this.dailyGoal * 7 }
+    },
+    insane: {
+      id: 2,
+      dailyGoal: 43200000, // 12 hours
+      isSelected: false,
+      get weeklyGoal() { return this.dailyGoal * 7 }
+    },
+  };
 
   // ================== MODAL ================== //
 
@@ -35,6 +56,7 @@
     _tasks: [],
     _currentTask: {},
     _isTimerPaused: true,
+    _selectedChallenge: CHALLENGES.normal, // Default challenge
 
     init() {
       if (localStorage && localStorage.length !== 0) {
@@ -56,6 +78,16 @@
           this.storeTasksInLocalStorage([]);
         }
       }
+
+      const challenge = !Number.isNaN(
+        Number.parseInt(
+          localStorage.selectedChallenge
+        )
+      ) ? Number.parseInt(localStorage.selectedChallenge) : 0;
+
+      this.selectedChallenge = challenge;
+      app.getColorForTheCurrentChallenge(challenge);
+
 
       if (localStorage && !localStorage.totalTimeSpent)
         localStorage.totalTimeSpent = 0;
@@ -89,6 +121,28 @@
       }
 
       return Number.parseInt(localStorage.dailyTimer);
+    },
+
+    get selectedChallenge() {
+      return this._selectedChallenge;
+    },
+
+    set selectedChallenge(challengeType) {
+      switch(challengeType) {
+        case 0:
+          this._selectedChallenge = CHALLENGES.normal
+          break;
+        case 1:
+          this._selectedChallenge = CHALLENGES.hard;
+          break;
+        case 2:
+          this._selectedChallenge = CHALLENGES.insane;
+          break;
+        default:
+          throw new Error('Challenge type requires strict value');
+      }
+
+      localStorage.selectedChallenge = challengeType;
     },
 
     get today() {
@@ -223,7 +277,8 @@
         'dailyTimer',
         'weeklyTimer',
         'startOfTheWeek',
-        'endOfTheWeek'
+        'endOfTheWeek',
+        'selectedChallenge'
       ];
 
       for (const key of keys) {
@@ -247,6 +302,7 @@
   const app = {
     init() {
       console.log('init app');
+      challengeStagesView.init();
       modal.init();
       view.init();
       counterView.init();
@@ -263,11 +319,27 @@
     },
 
     isDailyGoalReached() {
-      return modal.dailyTimer >= DAILY_GOAL;
+      return modal.dailyTimer >= modal.selectedChallenge.dailyGoal;
     },
 
     isWeeklyGoalReached() {
-      return modal.weeklyTimer >= WEEKLY_GOAL;
+      return modal.weeklyTimer >= modal.selectedChallenge.weeklyGoal;
+    },
+
+    getSelectedChallenge() {
+      return modal.selectedChallenge;
+    },
+
+    selectChallenge(challengeType) {
+      modal.selectedChallenge = challengeType;
+      wholeTimeWorkHours.renderDailyGoal();
+      wholeTimeWorkHours.renderWeeklyGoal();
+
+      this.getColorForTheCurrentChallenge(challengeType);
+    },
+
+    getColorForTheCurrentChallenge(challengeType) {
+      challengeStagesView.colorizeSelectedChallenge(challengeType);
     },
 
     activateTimer(bool) {
@@ -480,6 +552,37 @@
   };
 
 
+  const challengeStagesView = {
+    init() {
+      this._normal = document.getElementById('challenge-normal');
+      this._hard = document.getElementById('challenge-hard');
+      this._insane = document.getElementById('challenge-insane');
+
+      this._normal.addEventListener('click', () => app.selectChallenge(0));
+      this._hard.addEventListener('click', () => app.selectChallenge(1));
+      this._insane.addEventListener('click', () => app.selectChallenge(2));
+    },
+
+    colorizeSelectedChallenge(challengeType) {
+      const challengeViews = [
+        this._normal,
+        this._hard,
+        this._insane
+      ];
+
+      for (const challengeView of challengeViews) {
+        if (challengeView === challengeViews[challengeType]) {
+          challengeView.classList.add('selected-challenge');
+        }
+        else {
+          challengeView.classList.remove('selected-challenge');
+        }
+      }
+
+    }
+  }
+
+
   const counterView = {
     init() {
       this._counterViewHours = document.getElementById('counter-hours');
@@ -536,7 +639,7 @@
     },
 
     renderDailyGoal(state = false) {
-      const delta = DAILY_GOAL - app.getDailyCompletedTime();
+      const delta = app.getSelectedChallenge().dailyGoal - app.getDailyCompletedTime();
       this._dailyGoalView.textContent = delta > 0 ? this.getHumanReadableFormat(delta) : '✓';
       for (const el of this._backgroundForDailyGoal) {
         el.classList.toggle('goal-completed', state);
@@ -544,7 +647,7 @@
     },
 
     renderWeeklyGoal(state = false) {
-      const delta =  WEEKLY_GOAL - app.getWeeklyCompletedTime()
+      const delta =  app.getSelectedChallenge().weeklyGoal - app.getWeeklyCompletedTime()
       this._weeklyGoalView.textContent = delta > 0 ? this.getHumanReadableFormat(delta) : '✓';
       for (const el of this._backgroundForWeeklyGoal) {
         el.classList.toggle('weekly-goal-completed', state);
