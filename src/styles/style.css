@@ -250,6 +250,16 @@ footer > div > div span {
 }
 
 
+.daily-goal-pending {
+  background-color: #db4d4d
+}
+
+
+.daily-goal-completed {
+  background-color: rgb(109, 223, 64);
+}
+
+
 input.has-task {
   background-color: #4a4a4a;
   color: #ff0;

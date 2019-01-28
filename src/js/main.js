@@ -25,6 +25,8 @@
     }
   }
 
+  const DAILY_GOAL = 21600000; // 6 hours in ms
+
   // ================== MODAL ================== //
 
   const modal = {
@@ -202,6 +204,7 @@
       this.currentTask.isDone = true;
       this.storeTasksInLocalStorage(this.getAllInternalTasks());
       this.setNextUndoneTask();
+      wholeTimeWorkHours.renderDailyGoal(app.isDailyGoalReached());
     }
   };
 
@@ -223,6 +226,10 @@
 
     isTimerPaused() {
       return modal.isTimerPaused;
+    },
+
+    isDailyGoalReached() {
+      return modal.dailyTimer >= DAILY_GOAL;
     },
 
     activateTimer(bool) {
@@ -451,10 +458,14 @@
       this._completedView = document.getElementById('completed-time');
       this._sinceView = document.getElementById('since-time');
       this._dailyCompletedView = document.getElementById('daily-completed-time');
+      this._dailyGoalView = document.getElementById('daily-goal');
+
+      this._backgroundForDailyGoal = document.getElementsByClassName('daily-goal-pending');
 
       this.renderCompletedTime(app.getTotalCompletedTime());
       this.renderTimeSinceStartDate(Date.now() - app.getEarliestCreatedTask());
       this.renderDailyCompletedTime(app.getDailyCompletedTime());
+      this.renderDailyGoal(app.isDailyGoalReached());
     },
 
     renderCompletedTime(ms) {
@@ -467,6 +478,13 @@
 
     renderDailyCompletedTime(ms) {
       this._dailyCompletedView.textContent = this.getHumanReadableFormat(ms);
+    },
+
+    renderDailyGoal(state = false) {
+      this._dailyGoalView.textContent = this.getHumanReadableFormat(DAILY_GOAL);
+      for (const el of this._backgroundForDailyGoal) {
+        el.classList.toggle('daily-goal-completed', state);
+      }
     },
 
     getHumanReadableFormat(timeMS = 0) {
@@ -525,8 +543,6 @@
           app.getAllTasksFromStorage().reverse()
         )
       );
-
-      // this.switchDisplay();
     },
 
     constructHTMLFromPreviousTasks(tasks) {
