@@ -25,7 +25,9 @@
     }
   }
 
+  const ONE_WEEK = 604800000;
   const DAILY_GOAL = 21600000; // 6 hours in ms
+  const WEEKLY_GOAL = DAILY_GOAL * 7;
 
   // ================== MODAL ================== //
 
@@ -82,12 +84,11 @@
         localStorage.dailyTimer = 0;
       }
 
-      if (this.today === new Date().getDay())
-        return Number.parseInt(localStorage.dailyTimer);
-      else {
+      if (!(this.today === new Date().getDay())) {
         localStorage.dailyTimer = 0;
-        return 0;
       }
+
+      return Number.parseInt(localStorage.dailyTimer);
     },
 
     get today() {
@@ -95,6 +96,32 @@
         localStorage.today = new Date().getDay();
 
       return Number.parseInt(localStorage.today);
+    },
+
+    get remainingTimeUntilTheEndOfTheWeek() {
+      if (
+        !localStorage.startOfTheWeek ||
+        !localStorage.endOfTheWeek ||
+        localStorage.endOfTheWeek - localStorage.startOfTheWeek <= 0
+        ) {
+        localStorage.startOfTheWeek = Date.now();
+        localStorage.endOfTheWeek = Date.now() + ONE_WEEK;
+      }
+
+      return Number.parseInt(localStorage.endOfTheWeek) -
+             Number.parseInt(localStorage.startOfTheWeek);
+    },
+
+    get weeklyTimer() {
+      if (!localStorage.weeklyTimer) {
+        localStorage.weeklyTimer = 0;
+      }
+
+      if (!(this.remainingTimeUntilTheEndOfTheWeek > 0)) {
+        localStorage.weeklyTimer = 0;
+      }
+
+      return Number.parseInt(localStorage.weeklyTimer);
     },
 
     storeTaskInternally(task) {
@@ -131,6 +158,12 @@
           localStorage.dailyTimer
         ) + time;
       }
+    },
+
+    addToWeeklyTimer(time) {
+      localStorage.weeklyTimer = Number.parseInt(
+        localStorage.weeklyTimer
+      ) + time;
     },
 
     addToTotalTimer(time) {
@@ -184,11 +217,13 @@
         'tasks',
         'currentTaskId',
         'isTimerPaused',
-        'tasks',
         'totalTimeSpent',
         'startingTime',
         'today',
-        'dailyTimer'
+        'dailyTimer',
+        'weeklyTimer',
+        'startOfTheWeek',
+        'endOfTheWeek'
       ];
 
       for (const key of keys) {
@@ -204,7 +239,6 @@
       this.currentTask.isDone = true;
       this.storeTasksInLocalStorage(this.getAllInternalTasks());
       this.setNextUndoneTask();
-      wholeTimeWorkHours.renderDailyGoal(app.isDailyGoalReached());
     }
   };
 
@@ -230,6 +264,10 @@
 
     isDailyGoalReached() {
       return modal.dailyTimer >= DAILY_GOAL;
+    },
+
+    isWeeklyGoalReached() {
+      return modal.weeklyTimer >= WEEKLY_GOAL;
     },
 
     activateTimer(bool) {
@@ -268,6 +306,10 @@
 
     getDailyCompletedTime() {
       return modal.dailyTimer;
+    },
+
+    getWeeklyCompletedTime() {
+      return modal.weeklyTimer;
     },
 
     getElementsFromDocument() {
@@ -330,6 +372,9 @@
       wholeTimeWorkHours.renderCompletedTime(0);
       wholeTimeWorkHours.renderTimeSinceStartDate(0);
       wholeTimeWorkHours.renderDailyCompletedTime(0);
+      wholeTimeWorkHours.renderDailyGoal();
+      wholeTimeWorkHours.renderWeeklyCompletedTime(0);
+      wholeTimeWorkHours.renderWeeklyGoal();
       previousTasksView.switchDisplay(false);
     },
 
@@ -340,17 +385,20 @@
         return;
       }
 
+      this.pauseCounter();
       modal.addToTotalTimer(modal.currentTask.timeSpent);
       modal.addToDailyTimer(modal.currentTask.timeSpent);
-
-      this.pauseCounter();
+      modal.addToWeeklyTimer(modal.currentTask.timeSpent);
       modal.markCurrentTaskAsCompleted();
       view.renderNextTask();
       counterView.renderSpentTime(0); // To reset timer
       previousTasksView.constructTasks();
       wholeTimeWorkHours.renderCompletedTime(Number.parseInt(localStorage.totalTimeSpent));
-      wholeTimeWorkHours.renderDailyCompletedTime(app.getDailyCompletedTime());
+      wholeTimeWorkHours.renderDailyCompletedTime(this.getDailyCompletedTime());
+      wholeTimeWorkHours.renderWeeklyCompletedTime(this.getWeeklyCompletedTime());
       wholeTimeWorkHours.renderTimeSinceStartDate(Date.now() - this.getEarliestCreatedTask());
+      wholeTimeWorkHours.renderDailyGoal(this.isDailyGoalReached());
+      wholeTimeWorkHours.renderWeeklyGoal(this.isWeeklyGoalReached());
     },
 
     startCounter() {
@@ -401,8 +449,6 @@
   const view = {
     init() {
       this._taskInput = document.getElementById('current-task');
-      this._removeAllTasksButton = document.getElementById('remove-all-tasks-button');
-
       this.renderNextTask();
     },
 
@@ -458,14 +504,19 @@
       this._completedView = document.getElementById('completed-time');
       this._sinceView = document.getElementById('since-time');
       this._dailyCompletedView = document.getElementById('daily-completed-time');
+      this._weeklyCompletedView = document.getElementById('weekly-completed-time');
       this._dailyGoalView = document.getElementById('daily-goal');
+      this._weeklyGoalView = document.getElementById('weekly-goal');
 
       this._backgroundForDailyGoal = document.getElementsByClassName('daily-goal-pending');
+      this._backgroundForWeeklyGoal = document.getElementsByClassName('weekly-goal-pending');
 
       this.renderCompletedTime(app.getTotalCompletedTime());
       this.renderTimeSinceStartDate(Date.now() - app.getEarliestCreatedTask());
       this.renderDailyCompletedTime(app.getDailyCompletedTime());
       this.renderDailyGoal(app.isDailyGoalReached());
+      this.renderWeeklyCompletedTime(app.getWeeklyCompletedTime());
+      this.renderWeeklyGoal(app.isWeeklyGoalReached());
     },
 
     renderCompletedTime(ms) {
@@ -480,10 +531,23 @@
       this._dailyCompletedView.textContent = this.getHumanReadableFormat(ms);
     },
 
+    renderWeeklyCompletedTime(ms) {
+      this._weeklyCompletedView.textContent = this.getHumanReadableFormat(ms);
+    },
+
     renderDailyGoal(state = false) {
-      this._dailyGoalView.textContent = this.getHumanReadableFormat(DAILY_GOAL);
+      const delta = DAILY_GOAL - app.getDailyCompletedTime();
+      this._dailyGoalView.textContent = delta > 0 ? this.getHumanReadableFormat(delta) : '✓';
       for (const el of this._backgroundForDailyGoal) {
-        el.classList.toggle('daily-goal-completed', state);
+        el.classList.toggle('goal-completed', state);
+      }
+    },
+
+    renderWeeklyGoal(state = false) {
+      const delta =  WEEKLY_GOAL - app.getWeeklyCompletedTime()
+      this._weeklyGoalView.textContent = delta > 0 ? this.getHumanReadableFormat(delta) : '✓';
+      for (const el of this._backgroundForWeeklyGoal) {
+        el.classList.toggle('weekly-goal-completed', state);
       }
     },
 
@@ -491,19 +555,19 @@
       const date = convertTimeFromMs(timeMS);
       let str = '';
       if (date.days > 0) {
-        str += `${date.days} days `;
+        str += `${date.days} day${date.days > 1 ? 's' : ''} `;
       }
 
       if (date.hours > 0) {
-        str += `${date.hours} hours `;
+        str += `${date.hours} hour${date.hours > 1 ? 's' : ''} `;
       }
 
       if (date.minutes > 0) {
-        str += `${date.minutes} minutes `;
+        str += `${date.minutes} minute${date.minutes > 1 ? 's' : ''} `;
       }
 
       if (date.seconds > 0) {
-        str += `${date.seconds} seconds`;
+        str += `${date.seconds} second${date.seconds > 1 ? 's' : ''}`;
       }
 
       if (str.length === 0) return '0 seconds';

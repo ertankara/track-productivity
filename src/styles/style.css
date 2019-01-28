@@ -100,6 +100,7 @@ html * {
 body {
   min-height: 800px;
   max-width: 550px;
+  width: 500px;
   margin-right: auto;
   margin-left: auto;
   overflow: scroll;
@@ -251,12 +252,20 @@ footer > div > div span {
 
 
 .daily-goal-pending {
-  background-color: #db4d4d
+  background-color: #af1414;
 }
 
 
 .daily-goal-completed {
-  background-color: rgb(109, 223, 64);
+  background-color: #39a70e;
+}
+
+.weekly-goal-pending {
+  background-color: #af1414;
+}
+
+.weekly-goal-completed {
+  background-color: #39a70e;
 }
 
 
