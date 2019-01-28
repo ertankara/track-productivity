@@ -201,7 +201,7 @@ body > div > div:nth-child(3) {
 
 
 .selected-challenge {
-  background-color: #97a800;
+  background-color: #859400;
 }
 
 
@@ -225,6 +225,7 @@ footer button {
   background-color: #4a4a4a;
   color: #eee;
   padding: 10px;
+  border-radius: 5px;
 }
 
 footer > div > div {
@@ -246,7 +247,7 @@ footer > div > ul > li {
 footer > div > ul > li > span:nth-child(odd) {
   font-weight: bold;
   text-decoration: underline;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
 
@@ -256,6 +257,7 @@ footer > div > div span {
   background-color: #222;
   color: #eee;
   padding: 15px;
+  border-radius: 5px;
 }
 
 

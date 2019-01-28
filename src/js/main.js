@@ -26,9 +26,6 @@
   }
 
   const ONE_WEEK = 604800000;
-  // const DAILY_GOAL_NORMAL = 21600000; // 6 hours in ms
-  // const WEEKLY_GOAL_NORMAL = DAILY_GOAL_NORMAL * 7;
-
   const CHALLENGES = {
     normal: {
       id: 0,
@@ -414,10 +411,13 @@
         return;
       }
 
+      this.activateTimer(false);
       const task = new Task(this._taskInput.value);
       modal.currentTask = task;
       localStorage.currentTaskId = task.id;
       modal.storeTaskInternally(task);
+      delete localStorage.startingTime;
+      counterView.renderSpentTime(app.getCurrentTaskSpentTime());
       view.renderNextTask();
       previousTasksView.constructTasks();
     },
@@ -463,7 +463,7 @@
       modal.addToWeeklyTimer(modal.currentTask.timeSpent);
       modal.markCurrentTaskAsCompleted();
       view.renderNextTask();
-      counterView.renderSpentTime(0); // To reset timer
+      counterView.renderSpentTime(this.getCurrentTaskSpentTime()); // To reset timer
       previousTasksView.constructTasks();
       wholeTimeWorkHours.renderCompletedTime(Number.parseInt(localStorage.totalTimeSpent));
       wholeTimeWorkHours.renderDailyCompletedTime(this.getDailyCompletedTime());
