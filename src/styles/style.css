@@ -99,8 +99,8 @@ html * {
 
 body {
   min-height: 800px;
-  max-width: 550px;
-  width: 500px;
+  min-width: 500px;
+  width: 600px;
   margin-right: auto;
   margin-left: auto;
   overflow: scroll;
