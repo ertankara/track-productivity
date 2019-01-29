@@ -759,6 +759,11 @@
         const timeSpan = document.createElement('span');
         taskSpan.textContent = task.task;
         timeSpan.textContent = wholeTimeWorkHours.getHumanReadableFormat(task.timeSpent);
+        if (task.isDone) {
+          taskSpan.style.color = '#31ac00';
+          taskSpan.textContent = taskSpan.textContent + ' ✓';
+        }
+
         li.appendChild(taskSpan);
         li.appendChild(timeSpan);
         fragment.appendChild(li);
