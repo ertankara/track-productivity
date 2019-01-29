@@ -27,24 +27,69 @@
   }
 
   const ONE_WEEK = 604800000;
+  const ONE_DAY = 1000 * 60 * 60 * 24;
   const CHALLENGES = {
     normal: {
       id: 0,
-      dailyGoal: 21600000, // 6 hours
+      get dailyGoal() {
+        if (!localStorage.weeklyTimer)
+          localStorage.weeklyTimer = 0;
+
+        const remainingTimeToAccomplishWeeklyGoal = this.weeklyGoal -
+          Number.parseInt(localStorage.weeklyTimer);
+        const remainingTimeInDays = modal
+          .remainingTimeUntilTheEndOfTheWeek / ONE_DAY
+
+        const remainingDays = remainingTimeInDays === 0 ?
+          1 :
+          remainingTimeInDays;
+
+        return remainingTimeToAccomplishWeeklyGoal  / remainingDays;
+      },
       isSelected: false,
-      get weeklyGoal() { return this.dailyGoal * 7 }
+      weeklyGoal: 151200000
     },
     hard: {
       id: 1,
-      dailyGoal: 32400000, // 9 hours
+      get dailyGoal() {
+        if (!localStorage.weeklyTimer)
+          localStorage.weeklyTimer = 0;
+
+        const remainingTimeToAccomplishWeeklyGoal = this.weeklyGoal -
+          Number.parseInt(localStorage.weeklyTimer);
+        const remainingTimeInDays = modal
+          .remainingTimeUntilTheEndOfTheWeek / (1000 * 60 * 60 * 24)
+
+        const remainingDays = remainingTimeInDays === 0 ?
+          1 :
+          remainingTimeInDays;
+
+
+        return remainingTimeToAccomplishWeeklyGoal  / remainingDays;
+      },
       isSelected: false,
-      get weeklyGoal() { return this.dailyGoal * 7 }
+      weeklyGoal: 226800000
     },
     insane: {
       id: 2,
-      dailyGoal: 43200000, // 12 hours
+      get dailyGoal() {
+        if (!localStorage.weeklyTimer)
+          localStorage.weeklyTimer = 0;
+
+        const remainingTimeToAccomplishWeeklyGoal = this.weeklyGoal -
+          Number.parseInt(localStorage.weeklyTimer);
+        const remainingTimeInDays = modal
+          .remainingTimeUntilTheEndOfTheWeek / (1000 * 60 * 60 * 24)
+
+        const remainingDays = remainingTimeInDays === 0 ?
+          1 :
+          remainingTimeInDays;
+
+
+        return remainingTimeToAccomplishWeeklyGoal  / remainingDays;
+      },
       isSelected: false,
-      get weeklyGoal() { return this.dailyGoal * 7 }
+      weeklyGoal: 302400000
     },
   };
 
@@ -151,17 +196,20 @@
     },
 
     get remainingTimeUntilTheEndOfTheWeek() {
+      if (modal.getTasksFromStorage().length === 0) {
+        // If there is no created task, return fixed time
+        return ONE_WEEK;
+      }
       if (
         !localStorage.startOfTheWeek ||
         !localStorage.endOfTheWeek ||
         localStorage.endOfTheWeek - localStorage.startOfTheWeek <= 0
-        ) {
-        localStorage.startOfTheWeek = Date.now();
-        localStorage.endOfTheWeek = Date.now() + ONE_WEEK;
+      ) {
+        this.setWeekBorders();
       }
 
       return Number.parseInt(localStorage.endOfTheWeek) -
-             Number.parseInt(localStorage.startOfTheWeek);
+             Date.now();
     },
 
     get weeklyTimer() {
@@ -174,6 +222,11 @@
       }
 
       return Number.parseInt(localStorage.weeklyTimer);
+    },
+
+    setWeekBorders() {
+      localStorage.startOfTheWeek = Date.now();
+      localStorage.endOfTheWeek = Date.now() + ONE_WEEK;
     },
 
     storeTaskInternally(task) {
@@ -466,6 +519,7 @@
       counterView.renderSpentTime(app.getCurrentTaskSpentTime());
       view.renderNextTask();
       previousTasksView.constructTasks();
+      modal.setWeekBorders();
     },
 
     dropTask() {
