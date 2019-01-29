@@ -225,8 +225,10 @@
     },
 
     setWeekBorders() {
-      localStorage.startOfTheWeek = Date.now();
-      localStorage.endOfTheWeek = Date.now() + ONE_WEEK;
+      if (localStorage.startOfTheWeek == null || localStorage.endOfTheWeek == null) {
+        localStorage.startOfTheWeek = Date.now();
+        localStorage.endOfTheWeek = Date.now() + ONE_WEEK;
+      }
     },
 
     storeTaskInternally(task) {
