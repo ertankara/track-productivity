@@ -7,6 +7,7 @@
       this.id = Math.random().toString(36).substr(2);
       this.timeStamp = Date.now();
       this.timeSpent = 0; // in ms
+      this.isSkipped = false;
     }
   }
 
@@ -191,11 +192,35 @@
     getNextUndoneTaskFromArray() {
       // Get the undone task starting the search from the last element
       for (let i = this._tasks.length - 1; i >= 0; i--) {
-        if (this._tasks[i] && !this._tasks[i].isDone)
+        if (
+            this._tasks[i] &&
+            !this._tasks[i].isDone &&
+            !this._tasks[i].isSkipped
+        ) {
           return this._tasks[i]
+        }
+      }
+
+      const hasUndoneTask = this._tasks.some(task => !task.isDone);
+      // If has undone task or tasks and still came this far
+      // Reset tasks so they can be selected
+      if (hasUndoneTask) {
+        for (let i = 0; i < this._tasks.length; i++) {
+          this._tasks[i].isSkipped = false;
+        }
+
+        // Call it again, with a fresh list of unskipped elements
+        return this.getNextUndoneTaskFromArray();
       }
 
       return {};
+    },
+
+    skipTask() {
+      this.currentTask.isSkipped = true;
+      this.currentTask = this.getNextUndoneTaskFromArray(modal.currentTask);
+      // Update localStorage with current task
+      this.storeTasksInLocalStorage(this.getAllInternalTasks());
     },
 
     addToDailyTimer(time) {
@@ -342,6 +367,8 @@
     activateTimer(bool) {
       if (!bool) {
         clearInterval(this.counterInterval);
+        delete localStorage.startingTime;
+        localStorage.isTimerPaused = true;
       }
 
       modal.isTimerPaused = !bool;
@@ -362,6 +389,10 @@
 
     getAllTasksFromStorage() {
       return modal.getTasksFromStorage();
+    },
+
+    getCurrentTask() {
+      return modal.currentTask;
     },
 
     getCurrentTaskText() {
@@ -387,16 +418,18 @@
       this._checkMarkBtn = document.getElementById('checkmark-btn');
       this._dropBtn = document.getElementById('drop-btn');
       this._addBtn = document.getElementById('add-btn');
+      this._nextBtn = document.getElementById('next-btn');
       this._taskInput = document.getElementById('current-task');
       this._removeAllTasksButton = document.getElementById('remove-all-tasks-button');
     },
 
     attachEventListenersToElements() {
       this._playBtn.addEventListener('click', () => this.startCounter());
-      this._pauseBtn.addEventListener('click', () => this.pauseCounter());
+      this._pauseBtn.addEventListener('click', () => this.activateTimer(false));
       this._checkMarkBtn.addEventListener('click', () => this.markTaskAsCompleted());
       this._dropBtn.addEventListener('click', () => this.dropTask());
       this._addBtn.addEventListener('click', () => this.registerCurrentTask());
+      this._nextBtn.addEventListener('click', () => this.getNextTask())
       this._removeAllTasksButton.addEventListener('click', () => this.removeAllPreviousTasks());
 
       this._taskInput.addEventListener('keyup', (e) => {
@@ -404,6 +437,20 @@
           this.registerCurrentTask();
         }
       });
+    },
+
+    getNextTask() {
+      this.activateTimer(false);
+      modal.skipTask();
+      view.renderNextTask();
+      counterView.renderSpentTime(this.getCurrentTaskSpentTime()); // To reset timer
+      previousTasksView.constructTasks();
+      wholeTimeWorkHours.renderCompletedTime(Number.parseInt(localStorage.totalTimeSpent));
+      wholeTimeWorkHours.renderDailyCompletedTime(this.getDailyCompletedTime());
+      wholeTimeWorkHours.renderWeeklyCompletedTime(this.getWeeklyCompletedTime());
+      wholeTimeWorkHours.renderTimeSinceStartDate(Date.now() - this.getEarliestCreatedTask());
+      wholeTimeWorkHours.renderDailyGoal(this.isDailyGoalReached());
+      wholeTimeWorkHours.renderWeeklyGoal(this.isWeeklyGoalReached());
     },
 
     registerCurrentTask() {
@@ -416,7 +463,6 @@
       modal.currentTask = task;
       localStorage.currentTaskId = task.id;
       modal.storeTaskInternally(task);
-      delete localStorage.startingTime;
       counterView.renderSpentTime(app.getCurrentTaskSpentTime());
       view.renderNextTask();
       previousTasksView.constructTasks();
@@ -428,8 +474,6 @@
 
       modal.removeCurrentTask();
       view.renderNextTask();
-      localStorage.isTimerPaused = true;
-      delete localStorage.startingTime;
       this.activateTimer(false);
       counterView.renderSpentTime(0);
       previousTasksView.constructTasks();
@@ -437,7 +481,7 @@
 
     removeAllPreviousTasks() {
       modal.flushTasks();
-      this.pauseCounter();
+      this.activateTimer(false);
       counterView.renderSpentTime(0);
       view.renderNextTask();
       previousTasksView.constructTasks();
@@ -457,7 +501,7 @@
         return;
       }
 
-      this.pauseCounter();
+      this.activateTimer(false);
       modal.addToTotalTimer(modal.currentTask.timeSpent);
       modal.addToDailyTimer(modal.currentTask.timeSpent);
       modal.addToWeeklyTimer(modal.currentTask.timeSpent);
@@ -495,12 +539,6 @@
       }, 1);
     },
 
-    pauseCounter() {
-      localStorage.isTimerPaused = true;
-      delete localStorage.startingTime;
-      this.activateTimer(false);
-    },
-
     getStartingTime() {
       if (
         localStorage.startingTime &&
@@ -534,7 +572,7 @@
       else
         this.removeCSSClassForCurrentTask();
 
-      const newTask = app.getNextUndoneTaskFromArray();
+      const newTask = app.getCurrentTask();
       this.setValueOfInputField(newTask.task);
     },
 
