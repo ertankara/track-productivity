@@ -733,8 +733,8 @@
     },
 
     renderDailyGoal(state = false) {
-      const dailyGoal = app.getSelectedChallenge().dailyGoal;
-      this._dailyGoalView.textContent = dailyGoal > app.getDailyCompletedTime() ? this.getHumanReadableFormat(dailyGoal) : '✓';
+      const delta = app.getSelectedChallenge().dailyGoal - app.getDailyCompletedTime();
+      this._dailyGoalView.textContent = delta > 0 ? this.getHumanReadableFormat(delta) : '✓';
       for (const el of this._backgroundForDailyGoal) {
         el.classList.toggle('goal-completed', state);
       }
