@@ -409,8 +409,8 @@
 
     selectChallenge(challengeType) {
       modal.selectedChallenge = challengeType;
-      wholeTimeWorkHours.renderDailyGoal();
-      wholeTimeWorkHours.renderWeeklyGoal();
+      wholeTimeWorkHours.renderDailyGoal(this.isDailyGoalReached());
+      wholeTimeWorkHours.renderWeeklyGoal(this.isWeeklyGoalReached());
 
       this.getColorForTheCurrentChallenge(challengeType);
     },
@@ -733,8 +733,8 @@
     },
 
     renderDailyGoal(state = false) {
-      const delta = app.getSelectedChallenge().dailyGoal - app.getDailyCompletedTime();
-      this._dailyGoalView.textContent = delta > 0 ? this.getHumanReadableFormat(delta) : '✓';
+      const dailyGoal = app.getSelectedChallenge().dailyGoal;
+      this._dailyGoalView.textContent = dailyGoal > app.getDailyCompletedTime() ? this.getHumanReadableFormat(dailyGoal) : '✓';
       for (const el of this._backgroundForDailyGoal) {
         el.classList.toggle('goal-completed', state);
       }
