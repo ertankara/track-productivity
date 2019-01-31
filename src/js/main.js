@@ -736,7 +736,7 @@
       const delta = app.getSelectedChallenge().dailyGoal - app.getDailyCompletedTime();
       this._dailyGoalView.textContent = delta > 0 ? this.getHumanReadableFormat(delta) : '✓';
       for (const el of this._backgroundForDailyGoal) {
-        el.classList.toggle('goal-completed', state);
+        el.classList.toggle('daily-goal-completed', state);
       }
     },
 
