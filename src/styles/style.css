@@ -246,13 +246,26 @@ footer > div > ul > li {
   font-size: 1.4em;
   margin-bottom: 10px;
   text-align: center;
+  border: 1px solid rgba(40, 40, 40, 0.4);
+  padding: 10px;
 }
 
 
-footer > div > ul > li > span:nth-child(odd) {
+.previous-task {
   font-weight: bold;
   text-decoration: underline;
   margin-bottom: 12px;
+}
+
+.hide-task-button {
+  background-color: green;
+  color: white;
+  height: 40px;
+  width: 40px;
+  border-radius: 20px;
+  font-size: 1.1em;
+  text-decoration: none;
+  /* align-self: flex-start; */
 }
 
 

@@ -8,6 +8,7 @@
       this.timeStamp = Date.now();
       this.timeSpent = 0; // in ms
       this.isSkipped = false;
+      this.hideFromView = false;
     }
   }
 
@@ -318,6 +319,12 @@
       return [];
     },
 
+    hideTask(taskId) {
+      const targetTask = this.getSearchedTask(taskId);
+      targetTask.hideFromView = true;
+      this.storeTasksInLocalStorage(this.getAllInternalTasks());
+    },
+
     getSearchedTask(taskId) {
       return this.getAllInternalTasks().find(task => task.id === taskId);
     },
@@ -405,6 +412,11 @@
 
     getSelectedChallenge() {
       return modal.selectedChallenge;
+    },
+
+    hideTask(taskId) {
+      modal.hideTask(taskId);
+      previousTasksView.constructTasks();
     },
 
     selectChallenge(challengeType) {
@@ -810,12 +822,23 @@
       const fragment = document.createDocumentFragment();
 
       for (const task of tasks) {
+        if (task.isDone && task.hideFromView) continue;
+
         const li = document.createElement('li');
         const taskSpan = document.createElement('span');
         const timeSpan = document.createElement('span');
+
+        const hideTaskButton = document.createElement('button');
+        hideTaskButton.innerHTML = '&times;';
+        hideTaskButton.classList.add('hide-task-button');
+        hideTaskButton.addEventListener('click', () => app.hideTask(task.id));
+
         taskSpan.textContent = task.task;
+        taskSpan.classList.add('previous-task');
         timeSpan.textContent = wholeTimeWorkHours.getHumanReadableFormat(task.timeSpent);
+
         if (task.isDone) {
+          li.prepend(hideTaskButton);
           taskSpan.style.color = '#31ac00';
           taskSpan.textContent = taskSpan.textContent + ' ✓';
         }
