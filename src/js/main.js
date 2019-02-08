@@ -9,6 +9,7 @@
       this.timeSpent = 0; // in ms
       this.isSkipped = false;
       this.hideFromView = false;
+      this.hasHighPriority = false;
     }
   }
 
@@ -245,8 +246,28 @@
       this._tasks = taskArray;
     },
 
+    changePriorityOfTask(taskId) {
+      const targetTask = this.getSearchedTask(taskId);
+      targetTask.hasHighPriority = !targetTask.hasHighPriority;
+      // const nextTask = this.getNextUndoneTaskFromArray();
+      // if (!this.currentTask.hasHighPriority && (nextTask.hasHighPriority && nextTask.id !== targetTask.id)) {
+      //   this.setSelectedTaskAsCurrentTask(nextTask.id);
+      //   return;
+      // }
+      // else if (!this.currentTask.hasHighPriority)
+      //   this.setSelectedTaskAsCurrentTask(taskId);
+      console.log('is reached');
+      this.setSelectedTaskAsCurrentTask(this.getNextUndoneTaskFromArray().id);
+
+      this.storeTasksInLocalStorage(this.getAllInternalTasks());
+    },
+
     getNextUndoneTaskFromArray() {
       // Get the undone task starting the search from the last element
+      const taskWithHighPriority = this._tasks.find(t => Boolean(!t.isDone && t.hasHighPriority));
+      if (taskWithHighPriority)
+        return taskWithHighPriority;
+
       for (let i = this._tasks.length - 1; i >= 0; i--) {
         if (
             this._tasks[i] &&
@@ -308,6 +329,21 @@
       this.currentTask = this.getNextUndoneTaskFromArray();
     },
 
+    setSelectedTaskAsCurrentTask(taskId) {
+      const targetTask = this.getSearchedTask(taskId);
+      this.currentTask = targetTask;
+      for (const task of this._tasks) {
+        if (task.id === targetTask.id) {
+          task.isSkipped = false;
+          continue;
+        }
+
+        task.isSkipped = true;
+      }
+      this.storeTasksInLocalStorage(this.getAllInternalTasks());
+      localStorage.currentTaskId = taskId;
+    },
+
     getAllInternalTasks() {
       return this._tasks;
     },
@@ -348,6 +384,10 @@
     clearInternalStorage() {
       this._tasks = null;
       this._currentTask = null;
+    },
+
+    getTaskById(id) {
+      return this.getSearchedTask(id);
     },
 
     clearLocalStorage() {
@@ -419,6 +459,19 @@
       previousTasksView.constructTasks();
     },
 
+    selctTaskAsCurrent(id) {
+      const currentTask = this.getCurrentTask();
+      if (currentTask.hasHighPriority || currentTask.id === id) {
+        return;
+      }
+
+      modal.setSelectedTaskAsCurrentTask(id);
+      this.activateTimer(false);
+      view.renderNextTask();
+      previousTasksView.constructTasks();
+      counterView.renderSpentTime(this.getCurrentTask().timeSpent);
+    },
+
     selectChallenge(challengeType) {
       modal.selectedChallenge = challengeType;
       wholeTimeWorkHours.renderDailyGoal(this.isDailyGoalReached());
@@ -477,6 +530,14 @@
 
     getWeeklyCompletedTime() {
       return modal.weeklyTimer;
+    },
+
+    changePriority(id) {
+      this.activateTimer(false);
+      modal.changePriorityOfTask(id);
+      view.renderNextTask();
+      previousTasksView.constructTasks();
+      counterView.renderSpentTime(this.getCurrentTask().timeSpent);
     },
 
     getElementsFromDocument() {
@@ -828,19 +889,45 @@
         const taskSpan = document.createElement('span');
         const timeSpan = document.createElement('span');
 
-        const hideTaskButton = document.createElement('button');
-        hideTaskButton.innerHTML = '&times;';
-        hideTaskButton.classList.add('hide-task-button');
-        hideTaskButton.addEventListener('click', () => app.hideTask(task.id));
-
         taskSpan.textContent = task.task;
         taskSpan.classList.add('previous-task');
         timeSpan.textContent = wholeTimeWorkHours.getHumanReadableFormat(task.timeSpent);
 
         if (task.isDone) {
+          const hideTaskButton = document.createElement('button');
+          hideTaskButton.innerHTML = '&times;';
+          hideTaskButton.classList.add('hide-task-button', 'task-helper-button');
+          hideTaskButton.addEventListener('click', () => app.hideTask(task.id));
+
           li.prepend(hideTaskButton);
           taskSpan.style.color = '#31ac00';
           taskSpan.textContent = taskSpan.textContent + ' ✓';
+        }
+        else {
+          const selectTaskAsCurrentButton = document.createElement('button');
+          selectTaskAsCurrentButton.classList.add('task-helper-button');
+          selectTaskAsCurrentButton.addEventListener('click', () => app.selctTaskAsCurrent(task.id));
+          selectTaskAsCurrentButton.innerText = '🔍';
+
+          if (app.getCurrentTask().id === task.id) {
+            selectTaskAsCurrentButton.style.backgroundColor = '#a5a000';
+          }
+
+          const priorityButton = document.createElement('button');
+          priorityButton.textContent = '!';
+          priorityButton.classList.add('task-helper-button');
+          priorityButton.addEventListener('click', () => app.changePriority(task.id));
+          if (task.hasHighPriority) {
+            taskSpan.style.color = '#d80202';
+            priorityButton.classList.add('has-high-priority');
+          }
+
+          const buttonContainer = document.createElement('div');
+          buttonContainer.appendChild(selectTaskAsCurrentButton);
+          buttonContainer.appendChild(priorityButton);
+          buttonContainer.setAttribute('style', 'display: flex');
+
+          li.prepend(buttonContainer);
         }
 
         li.appendChild(taskSpan);

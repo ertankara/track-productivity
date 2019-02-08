@@ -257,15 +257,22 @@ footer > div > ul > li {
   margin-bottom: 12px;
 }
 
-.hide-task-button {
-  background-color: green;
-  color: white;
+.task-helper-button {
+  color: #fff;
   height: 40px;
   width: 40px;
+  margin: 10px;
   border-radius: 20px;
   font-size: 1.1em;
   text-decoration: none;
-  /* align-self: flex-start; */
+}
+
+.hide-task-button {
+  background-color: green;
+}
+
+.has-high-priority {
+  background-color: #d80202;
 }
 
 
