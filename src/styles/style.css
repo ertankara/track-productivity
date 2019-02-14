@@ -309,3 +309,19 @@ input.has-task {
   color: #ff0;
   font-size: 1.2em;
 }
+
+
+.priority-label {
+  width: 26px;
+  height: 26px;
+  border-radius: 13px;
+  padding: 5px;
+  margin-bottom: 5px;
+  margin-top: 5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #d80202;
+  color: #fff;
+}
+

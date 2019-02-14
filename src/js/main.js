@@ -10,6 +10,7 @@
       this.isSkipped = false;
       this.hideFromView = false;
       this.hasHighPriority = false;
+      this.priorityLevel = 0;
     }
   }
 
@@ -246,9 +247,11 @@
       this._tasks = taskArray;
     },
 
-    changePriorityOfTask(taskId) {
+    increasePriorityOfTask(taskId) {
       const targetTask = this.getSearchedTask(taskId);
-      targetTask.hasHighPriority = !targetTask.hasHighPriority;
+      targetTask.priorityLevel += 1;
+
+      targetTask.hasHighPriority = targetTask.priorityLevel > 0;
       // const nextTask = this.getNextUndoneTaskFromArray();
       // if (!this.currentTask.hasHighPriority && (nextTask.hasHighPriority && nextTask.id !== targetTask.id)) {
       //   this.setSelectedTaskAsCurrentTask(nextTask.id);
@@ -256,17 +259,38 @@
       // }
       // else if (!this.currentTask.hasHighPriority)
       //   this.setSelectedTaskAsCurrentTask(taskId);
-      console.log('is reached');
       this.setSelectedTaskAsCurrentTask(this.getNextUndoneTaskFromArray().id);
+      this.storeTasksInLocalStorage(this.getAllInternalTasks());
+    },
 
+    decreasePriorityOfTask(taskId) {
+      const targetTask = this.getSearchedTask(taskId);
+      if (!targetTask.hasHighPriority)
+        return;
+
+      targetTask.priorityLevel -= 1;
+      targetTask.hasHighPriority = targetTask.priorityLevel > 0;
+
+      this.setSelectedTaskAsCurrentTask(this.getNextUndoneTaskFromArray().id);
       this.storeTasksInLocalStorage(this.getAllInternalTasks());
     },
 
     getNextUndoneTaskFromArray() {
       // Get the undone task starting the search from the last element
-      const taskWithHighPriority = this._tasks.find(t => Boolean(!t.isDone && t.hasHighPriority));
-      if (taskWithHighPriority)
-        return taskWithHighPriority;
+      // const taskWithHighPriority = this._tasks.find(t => Boolean(!t.isDone && t.hasHighPriority));
+      // if (taskWithHighPriority)
+      //   return taskWithHighPriority;
+      const hasTaskWithHighPriority = this._tasks.some(t => Boolean(!t.isDone && t.hasHighPriority));
+
+      if (hasTaskWithHighPriority) {
+        let currentHighestPriorityTask = null;
+        for (const task of this._tasks) {
+          if (currentHighestPriorityTask == null || task.priorityLevel > currentHighestPriorityTask.priorityLevel) {
+            currentHighestPriorityTask = task;
+          }
+        }
+        return currentHighestPriorityTask;
+      }
 
       for (let i = this._tasks.length - 1; i >= 0; i--) {
         if (
@@ -456,7 +480,7 @@
 
     hideTask(taskId) {
       modal.hideTask(taskId);
-      previousTasksView.constructTasks();
+      previousTasksView.renderTasks();
     },
 
     selctTaskAsCurrent(id) {
@@ -468,7 +492,7 @@
       modal.setSelectedTaskAsCurrentTask(id);
       this.activateTimer(false);
       view.renderNextTask();
-      previousTasksView.constructTasks();
+      previousTasksView.renderTasks();
       counterView.renderSpentTime(this.getCurrentTask().timeSpent);
     },
 
@@ -532,11 +556,20 @@
       return modal.weeklyTimer;
     },
 
-    changePriority(id) {
+    increasePrioirty(id) {
       this.activateTimer(false);
-      modal.changePriorityOfTask(id);
+      modal.increasePriorityOfTask(id);
       view.renderNextTask();
-      previousTasksView.constructTasks();
+      previousTasksView.renderTasks();
+      counterView.renderSpentTime(this.getCurrentTask().timeSpent);
+    },
+
+    decreasePriority(event, id) {
+      event.preventDefault();
+      this.activateTimer(false);
+      modal.decreasePriorityOfTask(id);
+      view.renderNextTask();
+      previousTasksView.renderTasks();
       counterView.renderSpentTime(this.getCurrentTask().timeSpent);
     },
 
@@ -572,7 +605,7 @@
       modal.skipTask();
       view.renderNextTask();
       counterView.renderSpentTime(this.getCurrentTaskSpentTime()); // To reset timer
-      previousTasksView.constructTasks();
+      previousTasksView.renderTasks();
       wholeTimeWorkHours.renderCompletedTime(Number.parseInt(localStorage.totalTimeSpent));
       wholeTimeWorkHours.renderDailyCompletedTime(this.getDailyCompletedTime());
       wholeTimeWorkHours.renderWeeklyCompletedTime(this.getWeeklyCompletedTime());
@@ -588,12 +621,13 @@
 
       this.activateTimer(false);
       const task = new Task(this._taskInput.value);
-      modal.currentTask = task;
+      if (!modal.currentTask.hasHighPriority)
+        modal.currentTask = task;
       localStorage.currentTaskId = task.id;
       modal.storeTaskInternally(task);
       counterView.renderSpentTime(app.getCurrentTaskSpentTime());
       view.renderNextTask();
-      previousTasksView.constructTasks();
+      previousTasksView.renderTasks();
       modal.setWeekBorders();
     },
 
@@ -605,7 +639,7 @@
       view.renderNextTask();
       this.activateTimer(false);
       counterView.renderSpentTime(0);
-      previousTasksView.constructTasks();
+      previousTasksView.renderTasks();
     },
 
     removeAllPreviousTasks() {
@@ -613,7 +647,7 @@
       this.activateTimer(false);
       counterView.renderSpentTime(0);
       view.renderNextTask();
-      previousTasksView.constructTasks();
+      previousTasksView.renderTasks();
       wholeTimeWorkHours.renderCompletedTime(0);
       wholeTimeWorkHours.renderTimeSinceStartDate(0);
       wholeTimeWorkHours.renderDailyCompletedTime(0);
@@ -637,7 +671,7 @@
       modal.markCurrentTaskAsCompleted();
       view.renderNextTask();
       counterView.renderSpentTime(this.getCurrentTaskSpentTime()); // To reset timer
-      previousTasksView.constructTasks();
+      previousTasksView.renderTasks();
       wholeTimeWorkHours.renderCompletedTime(Number.parseInt(localStorage.totalTimeSpent));
       wholeTimeWorkHours.renderDailyCompletedTime(this.getDailyCompletedTime());
       wholeTimeWorkHours.renderWeeklyCompletedTime(this.getWeeklyCompletedTime());
@@ -853,12 +887,12 @@
       this._previousTasksContainer = document.getElementById('previous-tasks-container');
       this.shouldDisplayPreviousTasks = false;
       this.shouldDisplayTaskContainer(this.shouldDisplayPreviousTasks);
-      this.constructTasks();
+      this.renderTasks();
       this.insertTextForButton('See the tasks');
       this._previousTaskDisplayButton.addEventListener('click', () => this.switchDisplay());
     },
 
-    constructTasks() {
+    renderTasks() {
       // If there are items from previous renders
       if (this._previousTasksContainer.firstElementChild) {
         // Hide it from the view, to make the deletion more performant
@@ -916,7 +950,13 @@
           const priorityButton = document.createElement('button');
           priorityButton.textContent = '!';
           priorityButton.classList.add('task-helper-button');
-          priorityButton.addEventListener('click', () => app.changePriority(task.id));
+          priorityButton.addEventListener('click', () => app.increasePrioirty(task.id));
+          priorityButton.addEventListener('contextmenu', (e) => app.decreasePriority(e, task.id));
+
+          const priorityLabel = document.createElement('span');
+          priorityLabel.textContent = task.priorityLevel;
+          priorityLabel.classList.add('priority-label');
+
           if (task.hasHighPriority) {
             taskSpan.style.color = '#d80202';
             priorityButton.classList.add('has-high-priority');
@@ -925,6 +965,11 @@
           const buttonContainer = document.createElement('div');
           buttonContainer.appendChild(selectTaskAsCurrentButton);
           buttonContainer.appendChild(priorityButton);
+          buttonContainer.appendChild(priorityLabel);
+          priorityLabel.style.opacity = '0';
+          if (!task.isDone && task.priorityLevel > 1) {
+            priorityLabel.style.opacity = '1';
+          }
           buttonContainer.setAttribute('style', 'display: flex');
 
           li.prepend(buttonContainer);
