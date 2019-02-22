@@ -38,42 +38,6 @@
 }
 
 
-@keyframes hang-around {
-  0% {
-    transform: rotateX(0deg) rotateY(0deg);
-    top: 15px;
-    color: #fff;
-  }
-  10% {
-    transform: rotateX(5deg) rotateY(20deg);
-    top: 20px;
-    color: #bbb;
-  }
-  20% {
-    transform: rotateX(10deg) rotateY(50deg);
-    top: 25px;
-    color:#888;
-  }
-  40% {
-    transform: rotateX(20deg) rotateY(60deg);
-    top: #555;
-  }
-  60% {
-    transform: rotateX(10deg) rotateY(50deg);
-    top: #888;
-  }
-  80% {
-    transform: rotateX(5deg) rotateY(20deg);
-    top: 20px;
-    color: #bbb;
-  }
-  100% {
-    transform: rotateX(0deg) rotateY(0deg);
-    top: 15px;
-    color: #fff;
-  }
-}
-
 *, *::after, *::before {
   box-sizing: border-box;
 }
@@ -123,10 +87,9 @@ header > h1 {
   margin-left: auto;
   padding: 10px;
   background-color: #4a4a4a;
-  color: #4a4a4a;
+  color: #fff;
   text-align: center;
   transition: transform 0.5 top 0.5;
-  animation: hang-around 1.2s infinite;
 }
 
 
@@ -259,10 +222,10 @@ footer > div > ul > li {
 
 .task-helper-button {
   color: #fff;
-  height: 40px;
-  width: 40px;
+  height: 50px;
+  width: 50px;
   margin: 10px;
-  border-radius: 20px;
+  border-radius: 25px;
   font-size: 1.1em;
   text-decoration: none;
 }

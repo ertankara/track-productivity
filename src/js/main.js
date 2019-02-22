@@ -285,6 +285,9 @@
       if (hasTaskWithHighPriority) {
         let currentHighestPriorityTask = null;
         for (const task of this._tasks) {
+          if (task.isDone)
+            continue;
+
           if (currentHighestPriorityTask == null || task.priorityLevel > currentHighestPriorityTask.priorityLevel) {
             currentHighestPriorityTask = task;
           }
